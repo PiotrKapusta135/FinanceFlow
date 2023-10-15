@@ -1,17 +1,55 @@
 import pandas as pd
 import yfinance as yf
+
 import logging
 
-ticker_list = ['AAPL', 'TSLA', 'CDR.WA', 'MSFT', '^GSCP', 'GC=F', 'CL=F']
+from sqlalchemy import create_engine
 
-start_date = pd.to_datetime('2000/01/01', yearfirst=True)
-end_date = pd.Timestamp.now()
-dates_range= pd.date_range(start_date, end_date)
-ticks = len(dates_range) / 730
-dates = []
-for i in range(int(ticks)+1):
-    dates.append(start_date + pd.Timedelta(days=730 * i))
+from datetime import timedelta
+
+
+
+
+#First load
+'''
+engine = create_engine('postgresql://postgres:postgres@localhost:5432/postgres')
+ticker_list = ['AAPL', 'TSLA', 'CDR.WA', 'MSFT', '^GSCP', 'GC=F', 'CL=F']
+start_date = '2000-1-1'
 
 for symbol in ticker_list:
     if symbol == 'AAPL':
-        apple = yf.download(symbol, '2000-1-1', interval='1h')
+        df = yf.download(symbol, start=start_date)
+        df.to_sql(symbol, engine, schema='Trading', if_exists='replace')
+    elif symbol == 'TSLA':
+        df = yf.download(symbol, start=start_date)
+        df.to_sql(symbol, engine, schema='Trading', if_exists='replace')
+    elif symbol == 'CDR.WA':
+        df = yf.download(symbol, start=start_date)
+        df.to_sql(symbol, engine, schema='Trading', if_exists='replace')
+    elif symbol == 'MSFT':
+        df = yf.download(symbol, start=start_date)
+        df.to_sql(symbol, engine, schema='Trading', if_exists='replace')
+    elif symbol == '^GSCP':
+        df = yf.download(symbol, start=start_date)
+        df.to_sql(symbol, engine, schema='Trading', if_exists='replace')
+    elif symbol == 'GC=F':
+        df = yf.download(symbol, start=start_date)
+        df.to_sql(symbol, engine, schema='Trading', if_exists='replace')
+    elif symbol == 'CL=F':
+        df = yf.download(symbol, start=start_date)
+        df.to_sql(symbol, engine, schema='Trading', if_exists='replace')
+'''
+
+def get_historical_data(symbol, start_date, table_name):
+    engine = create_engine('postgresql://postgres:postgres@localhost:5432/postgres')
+    values = yf.download(symbol, start_date)
+    values.to_sql(table_name, engine, schema='Trading', if_exists='replace')
+    
+def get_recent_data(symbol):
+    engine = create_engine('postgresql://postgres:postgres@localhost:5432/postgres')
+    query = 'select max("Date") from {0}.{1}'.format('"Trading"', '"' + symbol + '"')
+    start_date = pd.read_sql(query, engine)[max][0] + timedelta(days=1)
+    values = yf.download(symbol, start=start_date )
+    values.to_sql(symbol, engine, schema="Trading", if_exists='append')
+
+
