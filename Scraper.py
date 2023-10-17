@@ -2,8 +2,6 @@ import pandas as pd
 import yfinance as yf
 import credentials
 
-import queue
-
 import logging
 
 from sqlalchemy.types import String, Float, Date, BigInteger
@@ -17,11 +15,13 @@ db = credentials.db
 host = credentials.host
 port = credentials.port
 
-engine = create_engine('postgresql://{0}:{1}@{2}:{3}/{4}'.format(user, 
-                                                                  password,
-                                                                  host,
-                                                                  port,
-                                                                  db))
+url = 'postgresql://{0}:{1}@{2}:{3}/{4}'.format(user, 
+                                                password,
+                                                host,
+                                                port,
+                                                db)
+
+engine = create_engine(url)
 
 types = {'Symbol':String(10),
          'Date':Date,
@@ -34,7 +34,7 @@ types = {'Symbol':String(10),
          }
 
 #First load
-'''            
+'''
 ticker_list = ['AAPL', 'TSLA', 'CDR.WA', 'MSFT', '^GSCP', 'GC=F', 'CL=F']
 start_date = '2000-1-1'
 
@@ -51,17 +51,19 @@ for symbol in ticker_list:
     df.to_sql('Stocks', engine, schema='Trading', if_exists='replace', index=False,
               dtype=types)
 
-'''
-    
+ '''
+
+   
 def get_historical_data(symbol, start_date):
-    engine = create_engine('postgresql://postgres:postgres@localhost:5432/postgres')
+    #engine = create_engine('postgresql://postgres:postgres@localhost:5432/postgres')
     values = yf.download(symbol, start_date)
+    values = preprocess(values, symbol)
     values.to_sql('Stocks', engine, schema='Trading', if_exists='append', index=False,
                   dtype=types)
     
 def get_recent_data(symbol):
-    engine = create_engine('postgresql://postgres:postgres@localhost:5432/postgres')
-    query = 'select max("Date") from {0}.{1}'.format('"Trading"', '"' + symbol + '"')
+    #engine = create_engine('postgresql://postgres:postgres@localhost:5432/postgres')
+    query = 'select max("Date") from {0}.{1}'.format('"Trading"', '"Stocks"')
     start_date = pd.read_sql(query, engine)[max][0] + timedelta(days=1)
     df = yf.download(symbol, start=start_date )
     df = preprocess(df, symbol)
@@ -69,6 +71,8 @@ def get_recent_data(symbol):
               dtype=types)
 
 def preprocess(df, symbol):
-    df['SYMBOL'] = symbol
+    df['Symbol'] = symbol
+    df = df.reset_index()
     return df
+
 
