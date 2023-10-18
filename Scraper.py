@@ -7,7 +7,12 @@ import logging
 from sqlalchemy.types import String, Float, Date, BigInteger
 from sqlalchemy import create_engine
 
-from datetime import timedelta
+from datetime import timedelta, datetime
+
+logging.basicConfig(filename='logs.log', format='%(asctime)s - %(levelname)s - %(message)s', 
+                    datefmt='%d-%m-%y %H:%M:%S', filemode='a', level=logging.INFO)
+
+logger = logging.getLogger()
 
 user = credentials.user
 password = credentials.password
@@ -20,8 +25,11 @@ url = 'postgresql://{0}:{1}@{2}:{3}/{4}'.format(user,
                                                 host,
                                                 port,
                                                 db)
-
-engine = create_engine(url)
+try:
+    engine = create_engine(url)
+    logger.info('Connection created')
+except Exception as msg:
+    logger.error(msg)
 
 types = {'Symbol':String(10),
          'Date':Date,
@@ -52,27 +60,51 @@ for symbol in ticker_list:
               dtype=types)
 
  '''
-
-   
-def get_historical_data(symbol, start_date):
-    #engine = create_engine('postgresql://postgres:postgres@localhost:5432/postgres')
-    values = yf.download(symbol, start_date)
-    values = preprocess(values, symbol)
-    values.to_sql('Stocks', engine, schema='Trading', if_exists='append', index=False,
-                  dtype=types)
-    
-def get_recent_data(symbol):
-    #engine = create_engine('postgresql://postgres:postgres@localhost:5432/postgres')
-    query = 'select max("Date") from {0}.{1}'.format('"Trading"', '"Stocks"')
-    start_date = pd.read_sql(query, engine)[max][0] + timedelta(days=1)
-    df = yf.download(symbol, start=start_date )
-    df = preprocess(df, symbol)
-    df.to_sql('Stocks', engine, schema="Trading", if_exists='append', index=False,
-              dtype=types)
-
 def preprocess(df, symbol):
     df['Symbol'] = symbol
     df = df.reset_index()
     return df
+   
+def get_historical_data(symbol, start_date):
+    logger.info('Getting historical data for {}'.symbol)
+    try:
+        values = yf.download(symbol, start_date)
+        logger.info('Data collected succesfully')
+    except Exception as msg:
+        logger.error('Error while collecting historical data: {}'.format(msg))
+    values = preprocess(values, symbol)
+    try:    
+        values.to_sql('Stocks', engine, schema='Trading', if_exists='append', index=False,
+                  dtype=types)
+        logger.info('Data saved to db')
+    except Exception as msg:
+        logger.error('Error while saving data historical data to db: ' + msg)
+        
+def get_recent_data(symbol):
+    logger.info('Getting recent data for {}'.format(symbol))
+    query = 'select max("Date") from {0}.{1} where "Symbol" = {2}'.format('"Trading"', '"Stocks"', "'" + symbol + "'")
+    try:
+        max_date = pd.read_sql(query, engine)['max'][0]
+    except Exception as msg:
+        logger.error("Error while checking max date: {}".format(msg))
+    if str(max_date) == datetime.today().strftime('%Y-%m-%d'):
+        logger.error("Max date is equal to today's date")
+        pass
+    else:
+        try:
+            start_date = max_date + timedelta(days=1)
+            df = yf.download(symbol, start=start_date )
+            logger.info('Data collected succesfully')
+        except Exception as msg:
+            logger.error('Error while collecting recent data: {}'.format(msg))
+        df = preprocess(df, symbol)
+        try:    
+            df.to_sql('Stocks', engine, schema="Trading", if_exists='append', index=False,
+                  dtype=types)
+            logger.info('Data saved to db')
+        except Exception as msg:
+            logger.error('Error while saving data to db: {}'.format(msg))
+
+
 
 

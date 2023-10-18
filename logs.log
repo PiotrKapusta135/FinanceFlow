@@ -1,0 +1,36 @@
+18-10-23 23:55:31 - INFO - Connection created
+18-10-23 23:55:31 - INFO - Getting recent data for AAPL
+18-10-23 23:55:31 - ERROR - Max date is equal to today's date
+18-10-23 23:55:31 - INFO - Getting recent data for TSLA
+18-10-23 23:55:31 - ERROR - Max date is equal to today's date
+18-10-23 23:55:31 - INFO - Getting recent data for CDR.WA
+18-10-23 23:55:31 - ERROR - Max date is equal to today's date
+18-10-23 23:55:31 - INFO - Getting recent data for MSFT
+18-10-23 23:55:31 - ERROR - Max date is equal to today's date
+18-10-23 23:55:31 - INFO - Getting recent data for ^GSPC
+18-10-23 23:55:31 - ERROR - Max date is equal to today's date
+18-10-23 23:55:31 - INFO - Getting recent data for GC=F
+18-10-23 23:55:31 - ERROR - Max date is equal to today's date
+18-10-23 23:55:31 - INFO - Getting recent data for CL=F
+18-10-23 23:55:31 - ERROR - Max date is equal to today's date
+18-10-23 23:55:57 - INFO - Getting recent data for AAPL
+18-10-23 23:55:58 - INFO - Data collected succesfully
+18-10-23 23:55:58 - INFO - Data saved to db
+18-10-23 23:55:58 - INFO - Getting recent data for TSLA
+18-10-23 23:55:58 - INFO - Data collected succesfully
+18-10-23 23:55:58 - INFO - Data saved to db
+18-10-23 23:55:58 - INFO - Getting recent data for CDR.WA
+18-10-23 23:55:58 - INFO - Data collected succesfully
+18-10-23 23:55:58 - INFO - Data saved to db
+18-10-23 23:55:58 - INFO - Getting recent data for MSFT
+18-10-23 23:55:58 - INFO - Data collected succesfully
+18-10-23 23:55:58 - INFO - Data saved to db
+18-10-23 23:55:58 - INFO - Getting recent data for ^GSPC
+18-10-23 23:55:58 - INFO - Data collected succesfully
+18-10-23 23:55:59 - INFO - Data saved to db
+18-10-23 23:55:59 - INFO - Getting recent data for GC=F
+18-10-23 23:55:59 - INFO - Data collected succesfully
+18-10-23 23:55:59 - INFO - Data saved to db
+18-10-23 23:55:59 - INFO - Getting recent data for CL=F
+18-10-23 23:55:59 - INFO - Data collected succesfully
+18-10-23 23:55:59 - INFO - Data saved to db
