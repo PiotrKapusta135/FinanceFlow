@@ -1,6 +1,6 @@
 import pandas as pd
 import yfinance as yf
-import credentials
+import config_file
 
 import logging
 
@@ -14,11 +14,11 @@ logging.basicConfig(filename='logs.log', format='%(asctime)s - %(levelname)s - %
 
 logger = logging.getLogger()
 
-user = credentials.user
-password = credentials.password
-db = credentials.db
-host = credentials.host
-port = credentials.port
+user = config_file.user
+password = config_file.password
+db = config_file.db
+host = config_file.host
+port = config_file.port
 
 url = 'postgresql://{0}:{1}@{2}:{3}/{4}'.format(user, 
                                                 password,
@@ -65,20 +65,23 @@ def preprocess(df, symbol):
     df = df.reset_index()
     return df
    
-def get_historical_data(symbol, start_date):
-    logger.info('Getting historical data for {}'.symbol)
-    try:
-        values = yf.download(symbol, start_date)
-        logger.info('Data collected succesfully')
-    except Exception as msg:
-        logger.error('Error while collecting historical data: {}'.format(msg))
-    values = preprocess(values, symbol)
+def load_to_db(df):
     try:    
-        values.to_sql('Stocks', engine, schema='Trading', if_exists='append', index=False,
+        df.to_sql('Stocks', engine, schema='Trading', if_exists='append', index=False,
                   dtype=types)
         logger.info('Data saved to db')
     except Exception as msg:
         logger.error('Error while saving data historical data to db: ' + msg)
+    
+def get_historical_data(symbol, start_date):
+    logger.info('Getting historical data for {}'.symbol)
+    try:
+        df = yf.download(symbol, start_date)
+        logger.info('Data collected succesfully')
+    except Exception as msg:
+        logger.error('Error while collecting historical data: {}'.format(msg))
+    df = preprocess(df, symbol)
+    load_to_db(df)
         
 def get_recent_data(symbol):
     logger.info('Getting recent data for {}'.format(symbol))
@@ -98,13 +101,6 @@ def get_recent_data(symbol):
         except Exception as msg:
             logger.error('Error while collecting recent data: {}'.format(msg))
         df = preprocess(df, symbol)
-        try:    
-            df.to_sql('Stocks', engine, schema="Trading", if_exists='append', index=False,
-                  dtype=types)
-            logger.info('Data saved to db')
-        except Exception as msg:
-            logger.error('Error while saving data to db: {}'.format(msg))
-
-
+        load_to_db(df)
 
 
