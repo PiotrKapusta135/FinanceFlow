@@ -1,13 +1,15 @@
 import pandas as pd
 import yfinance as yf
-import config_file
+import snscrape.modules.twitter as sntwitter
 
+import config_file
 import logging
 
 from sqlalchemy.types import String, Float, Date, BigInteger
 from sqlalchemy import create_engine
 
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
+
 
 logging.basicConfig(filename='logs.log', format='%(asctime)s - %(levelname)s - %(message)s', 
                     datefmt='%d-%m-%y %H:%M:%S', filemode='a', level=logging.INFO)
@@ -41,9 +43,9 @@ types = {'Symbol':String(10),
          'Volume':BigInteger()
          }
 
+
 #First load
 '''
-ticker_list = ['AAPL', 'TSLA', 'CDR.WA', 'MSFT', '^GSCP', 'GC=F', 'CL=F']
 start_date = '2000-1-1'
 
 columns = ['Symbol', 'Date', 'Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
@@ -103,4 +105,11 @@ def get_recent_data(symbol):
         df = preprocess(df, symbol)
         load_to_db(df)
 
-
+def get_historical_tweets(start_year, start_month, start_day, keyword):
+    df = pd.DataFrame()
+    start = date(start_year, start_month, start_day)
+    start = start.strftime('%Y-%m-%d')
+    query = keyword + 'since:' + start + '-filter:links -filter:replies'
+    for i, tweet in enumerate(sntwitter.TwitterSearchScraper(query).get_items()):
+        df.iloc[i] = [tweet.id, tweet.date, tweet.content]                                                    
+    return df
