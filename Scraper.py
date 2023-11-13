@@ -1,6 +1,6 @@
 import pandas as pd
 import yfinance as yf
-import snscrape.modules.twitter as sntwitter
+#import snscrape.modules.twitter as sntwitter
 
 import config_file
 import logging
@@ -67,13 +67,13 @@ def preprocess(df, symbol):
     df = df.reset_index()
     return df
    
-def load_to_db(df):
+def load_to_db(df, schema):
     try:    
-        df.to_sql('Stocks', engine, schema='Trading', if_exists='append', index=False,
+        df.to_sql('Stocks', engine, schema=schema, if_exists='append', index=False,
                   dtype=types)
         logger.info('Data saved to db')
     except Exception as msg:
-        logger.error('Error while saving data historical data to db: ' + msg)
+        logger.error('Error while saving historical data to db: ' + msg)
     
 def get_historical_data(symbol, start_date):
     logger.info('Getting historical data for {}'.symbol)
@@ -85,7 +85,7 @@ def get_historical_data(symbol, start_date):
     df = preprocess(df, symbol)
     load_to_db(df)
         
-def get_recent_data(symbol):
+def get_recent_data(symbol, schema):
     logger.info('Getting recent data for {}'.format(symbol))
     query = 'select max("Date") from {0}.{1} where "Symbol" = {2}'.format('"Trading"', '"Stocks"', "'" + symbol + "'")
     try:
@@ -103,8 +103,13 @@ def get_recent_data(symbol):
         except Exception as msg:
             logger.error('Error while collecting recent data: {}'.format(msg))
         df = preprocess(df, symbol)
-        load_to_db(df)
-
+        load_to_db(df, schema)
+        
+def get_data_from_db(schema, table, date):
+    query = 'SELECT * FROM {0}.{1} where "Date"' 
+    df = pd.
+        
+'''
 def get_historical_tweets(start_year, start_month, start_day, keyword):
     df = pd.DataFrame()
     start = date(start_year, start_month, start_day)
@@ -113,3 +118,4 @@ def get_historical_tweets(start_year, start_month, start_day, keyword):
     for i, tweet in enumerate(sntwitter.TwitterSearchScraper(query).get_items()):
         df.iloc[i] = [tweet.id, tweet.date, tweet.content]                                                    
     return df
+'''
