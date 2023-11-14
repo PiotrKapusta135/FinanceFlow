@@ -43,6 +43,7 @@ types = {'Symbol':String(10),
          'Volume':BigInteger()
          }
 
+symbol = 'AAPL'
 
 #First load
 '''
@@ -105,10 +106,11 @@ def get_recent_data(symbol, schema):
         df = preprocess(df, symbol)
         load_to_db(df, schema)
         
-def get_data_from_db(schema, table, date):
-    query = 'SELECT * FROM {0}.{1} where "Date"' 
-    df = pd.
-        
+def get_data_from_db(schema, table, symbol):
+    query = 'SELECT * FROM \"{0}\".\"{1}\" WHERE "Date" >= \'{2}\' and "Symbol" = {3}' \
+    .format('Trading', "Stocks", start_date, symbol) 
+    df = pd.read_sql(query, engine)
+    return df
 '''
 def get_historical_tweets(start_year, start_month, start_day, keyword):
     df = pd.DataFrame()
