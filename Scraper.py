@@ -107,10 +107,15 @@ def get_recent_data(symbol, schema):
         load_to_db(df, schema)
         
 def get_data_from_db(schema, table, symbol):
-    query = 'SELECT * FROM \"{0}\".\"{1}\" WHERE "Date" >= \'{2}\' and "Symbol" = {3}' \
-    .format('Trading', "Stocks", start_date, symbol) 
-    df = pd.read_sql(query, engine)
+    query_max_date = 'select max("Date") from {0}.{1} where "Symbol" = {2}'\
+        .format('"Trading"', '"Stocks"', "'" + symbol + "'")
+    max_date = pd.read_sql(query_max_date, engine)['max'][0]
+    start_date = max_date + timedelta(days=1)
+    query_data = 'SELECT * FROM \"{0}\".\"{1}\" WHERE "Date" >= \'{2}\' and "Symbol" = {3}' \
+        .format('Trading', "Stocks", start_date, "'" + symbol + "'") 
+    df = pd.read_sql(query_data, engine)
     return df
+
 '''
 def get_historical_tweets(start_year, start_month, start_day, keyword):
     df = pd.DataFrame()
