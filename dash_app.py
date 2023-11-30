@@ -6,6 +6,7 @@ import dash_auth
 import plotly.express as px
 
 import pandas as pd
+from datetime import date, datetime
 import config_file
 from sqlalchemy import create_engine
 
@@ -59,6 +60,14 @@ app.layout = html.Div(
             figure={
                 },
             ),
+        dcc.DatePickerRange(
+            id='date_picker',
+            min_date_allowed=data['Date'].min(),
+            max_date_allowed=data['Date'].max(),
+            initial_visible_month=data['Date'].min(),
+            start_date=data['Date'].min(),
+            end_date=data['Date'].max(),
+            display_format='DD/MM/YYYY'),
         dash_table.DataTable(
             id='datatable',
             columns=[{'name':i, "id":i} for i in data.columns],
@@ -66,10 +75,12 @@ app.layout = html.Div(
 
 @app.callback(
     Output('line_graph', 'figure'),
-    [Input('symbol_dropdown', 'value'), Input('kpi_dropdown', 'value')])
-def upgrade_graph(symbol, kpi):
+    [Input('symbol_dropdown', 'value'), Input('kpi_dropdown', 'value')],
+    Input('date_picker', 'start_date'), Input('date_picker', 'end_date'))
+def upgrade_graph(symbol, kpi, start_date, end_date):
     fig = px.line(data.loc[data['Symbol']==symbol],
-                  'Date', 
+                  data.loc[(datetime.date(data['Date'])>=datetime.strptime(start_date, '%Y-%m-%d'))
+                           & (datetime.date(data['Date'])<=datetime.strptime(end_date, '%Y-%m-%d'))], 
                   kpi,
                   title='{0} price of {1} Stocks'.format(kpi, symbol),)
     return fig
@@ -84,3 +95,6 @@ def display_table(symbol):
 
     
 app.run(debug=True)
+
+
+datetime.strptime(data['Date'].max(), '%Y-%m-%d')
